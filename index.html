@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to PDF Converter</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- html2pdf.js for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="header-title">MD to PDF</h1>
+            <button id="export-btn" class="export-btn">
+                <span class="export-btn-text">Export PDF</span>
+                <span class="export-btn-loading" hidden>Generating...</span>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Settings Sidebar -->
+            <aside class="sidebar">
+                <h2 class="sidebar-title">Settings</h2>
+
+                <!-- Paper Size -->
+                <div class="setting-group">
+                    <label for="paper-size">Paper Size</label>
+                    <select id="paper-size">
+                        <option value="a4" selected>A4 (210 x 297 mm)</option>
+                        <option value="letter">Letter (8.5 x 11 in)</option>
+                        <option value="legal">Legal (8.5 x 14 in)</option>
+                        <option value="a3">A3 (297 x 420 mm)</option>
+                        <option value="a5">A5 (148 x 210 mm)</option>
+                    </select>
+                </div>
+
+                <!-- Margins -->
+                <div class="setting-group">
+                    <label>Margins (mm)</label>
+                    <div class="margin-inputs">
+                        <div class="margin-input">
+                            <label for="margin-top">Top</label>
+                            <input type="number" id="margin-top" value="10" min="0" max="50" step="1">
+                        </div>
+                        <div class="margin-input">
+                            <label for="margin-right">Right</label>
+                            <input type="number" id="margin-right" value="10" min="0" max="50" step="1">
+                        </div>
+                        <div class="margin-input">
+                            <label for="margin-bottom">Bottom</label>
+                            <input type="number" id="margin-bottom" value="10" min="0" max="50" step="1">
+                        </div>
+                        <div class="margin-input">
+                            <label for="margin-left">Left</label>
+                            <input type="number" id="margin-left" value="10" min="0" max="50" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Font Size -->
+                <div class="setting-group">
+                    <label for="font-size">Font Size: <span id="font-size-display">14px</span></label>
+                    <input type="range" id="font-size" min="10" max="24" value="14">
+                </div>
+
+                <!-- Pagebreak Hint -->
+                <div class="setting-group hint">
+                    <p>Page break: use <code>---</code> or <code>&lt;!-- pagebreak --&gt;</code></p>
+                </div>
+            </aside>
+
+            <!-- Editor Panel -->
+            <section class="editor-panel">
+                <h2 class="panel-title">Markdown</h2>
+                <textarea id="markdown-input" placeholder="# Hello World
+
+Write your markdown here...
+
+Use --- for page breaks.
+
+## Features
+
+- Real-time preview
+- PDF export
+- Custom options
+
+---
+
+## Page 2
+
+Content on the second page."></textarea>
+            </section>
+
+            <!-- Preview Panel -->
+            <section class="preview-panel">
+                <h2 class="panel-title">Preview</h2>
+                <div id="preview-container" class="preview-container">
+                    <div id="preview-content" class="preview-content"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" hidden>
+        <div class="loading-spinner"></div>
+        <p>Generating PDF...</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/markdown-parser.js"></script>
+    <script src="js/ui-controller.js"></script>
+    <script src="js/pdf-generator.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
