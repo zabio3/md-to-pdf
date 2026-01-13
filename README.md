@@ -6,7 +6,7 @@ A lightweight, client-side Markdown to PDF converter. No server required - runs 
 
 - Real-time Markdown preview
 - PDF export with customizable options
-- Page breaks support (`---` or `<!-- pagebreak -->`)
+- Page breaks support (`<!-- pagebreak -->`)
 - Paper size selection (A4, Letter, Legal, A3, A5)
 - Margin adjustment
 - Font size control
@@ -34,21 +34,17 @@ open http://localhost:8080
 
 ### Page Breaks
 
-Insert page breaks in your Markdown using:
+Insert page breaks in your Markdown using HTML comments:
 
 ```markdown
 # Page 1 Content
 
----
+<!-- pagebreak -->
 
 # Page 2 Content
 ```
 
-Or use HTML comments:
-
-```markdown
-<!-- pagebreak -->
-```
+Note: `---` is rendered as a horizontal rule (standard Markdown behavior).
 
 ### Keyboard Shortcuts
 

@@ -39,7 +39,9 @@ const UIController = (function() {
             marginBottom: document.getElementById('margin-bottom'),
             marginLeft: document.getElementById('margin-left'),
             fontSize: document.getElementById('font-size'),
-            fontSizeDisplay: document.getElementById('font-size-display')
+            fontSizeDisplay: document.getElementById('font-size-display'),
+            sidebar: document.querySelector('.sidebar'),
+            menuToggle: document.getElementById('menu-toggle')
         };
     }
 
@@ -55,16 +57,21 @@ const UIController = (function() {
 
         // Settings changes trigger preview update
         elements.paperSize.addEventListener('change', updatePreview);
-        elements.marginTop.addEventListener('change', updatePreview);
-        elements.marginRight.addEventListener('change', updatePreview);
-        elements.marginBottom.addEventListener('change', updatePreview);
-        elements.marginLeft.addEventListener('change', updatePreview);
+        elements.marginTop.addEventListener('input', updatePreview);
+        elements.marginRight.addEventListener('input', updatePreview);
+        elements.marginBottom.addEventListener('input', updatePreview);
+        elements.marginLeft.addEventListener('input', updatePreview);
 
         // Export button click
         elements.exportBtn.addEventListener('click', handleExport);
 
         // Keyboard shortcuts
         document.addEventListener('keydown', handleKeydown);
+
+        // Menu toggle for mobile/tablet
+        if (elements.menuToggle) {
+            elements.menuToggle.addEventListener('click', toggleSidebar);
+        }
     }
 
     /**
@@ -168,11 +175,10 @@ const UIController = (function() {
     }
 
     /**
-     * Get the markdown input element (for external access)
-     * @returns {HTMLTextAreaElement}
+     * Toggle sidebar visibility (for mobile/tablet)
      */
-    function getMarkdownInput() {
-        return elements.markdownInput;
+    function toggleSidebar() {
+        elements.sidebar.classList.toggle('open');
     }
 
     // Public API
@@ -181,6 +187,6 @@ const UIController = (function() {
         updatePreview,
         getSettings,
         showLoading,
-        getMarkdownInput
+        toggleSidebar
     };
 })();

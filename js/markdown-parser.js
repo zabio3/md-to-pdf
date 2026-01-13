@@ -11,29 +11,21 @@ const MarkdownParser = (function() {
      */
     function initialize() {
         // Pagebreak extension for Marked.js
+        // Note: Only <!-- pagebreak --> is used for page breaks.
+        // --- is kept as standard Markdown horizontal rule.
         const pagebreakExtension = {
             name: 'pagebreak',
             level: 'block',
             start(src) {
-                // Find the start of a potential pagebreak
-                const match = src.match(/^(---|<!-- ?pagebreak ?-->)/m);
+                // Find the start of a potential pagebreak (only HTML comment syntax)
+                const match = src.match(/^<!-- ?pagebreak ?-->/m);
                 return match ? match.index : undefined;
             },
             tokenizer(src) {
-                // Match --- on its own line (not part of frontmatter) or <!-- pagebreak -->
-                // We need to be careful not to match --- that's part of horizontal rule in context
-                const rule = /^(?:<!-- ?pagebreak ?-->)\n?/;
-                const hrRule = /^---\n(?!\s*\w+:)/; // --- followed by newline, not YAML
+                // Match only <!-- pagebreak --> for explicit page breaks
+                const rule = /^<!-- ?pagebreak ?-->\n?/;
 
-                let match = rule.exec(src);
-                if (match) {
-                    return {
-                        type: 'pagebreak',
-                        raw: match[0]
-                    };
-                }
-
-                match = hrRule.exec(src);
+                const match = rule.exec(src);
                 if (match) {
                     return {
                         type: 'pagebreak',
@@ -54,9 +46,7 @@ const MarkdownParser = (function() {
         // Configure Marked.js options
         marked.setOptions({
             gfm: true,      // GitHub Flavored Markdown
-            breaks: true,   // Convert \n to <br>
-            headerIds: true,
-            mangle: false
+            breaks: true    // Convert \n to <br>
         });
     }
 

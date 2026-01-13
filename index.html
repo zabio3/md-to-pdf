@@ -6,15 +6,20 @@
     <title>Markdown to PDF Converter</title>
     <link rel="stylesheet" href="css/styles.css">
     <!-- Marked.js for Markdown parsing -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js" integrity="sha384-2qIq6GD/OiPWRN30/IKlmmSAOTCuPBSLf5GgPkqJFQns7ljqAy+ZUqlUKTyWNkNt" crossorigin="anonymous"></script>
     <!-- html2pdf.js for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha384-jdGK3L+5Hfgf5hzUJpmJhNyqKRR/z+qd5TXtl8fpXZOdPfJNBuHMaJOGniaqLf2B" crossorigin="anonymous"></script>
 </head>
 <body>
     <div class="app-container">
         <!-- Header -->
         <header class="header">
-            <h1 class="header-title">MD to PDF</h1>
+            <div class="header-left">
+                <button id="menu-toggle" class="menu-toggle" aria-label="Toggle settings">
+                    <span class="menu-icon"></span>
+                </button>
+                <h1 class="header-title">MD to PDF</h1>
+            </div>
             <button id="export-btn" class="export-btn">
                 <span class="export-btn-text">Export PDF</span>
                 <span class="export-btn-loading" hidden>Generating...</span>
@@ -70,7 +75,7 @@
 
                 <!-- Pagebreak Hint -->
                 <div class="setting-group hint">
-                    <p>Page break: use <code>---</code> or <code>&lt;!-- pagebreak --&gt;</code></p>
+                    <p>Page break: use <code>&lt;!-- pagebreak --&gt;</code></p>
                 </div>
             </aside>
 
@@ -81,7 +86,7 @@
 
 Write your markdown here...
 
-Use --- for page breaks.
+Use &lt;!-- pagebreak --&gt; for page breaks.
 
 ## Features
 
@@ -89,7 +94,7 @@ Use --- for page breaks.
 - PDF export
 - Custom options
 
----
+&lt;!-- pagebreak --&gt;
 
 ## Page 2
 

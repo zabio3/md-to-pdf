@@ -50,10 +50,60 @@ body {
     z-index: 10;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 .header-title {
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--accent-color);
+}
+
+/* Menu Toggle Button (hidden on desktop) */
+.menu-toggle {
+    display: none;
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-toggle:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.menu-icon {
+    width: 20px;
+    height: 2px;
+    background-color: var(--text-primary);
+    position: relative;
+}
+
+.menu-icon::before,
+.menu-icon::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 2px;
+    background-color: var(--text-primary);
+    left: 0;
+}
+
+.menu-icon::before {
+    top: -6px;
+}
+
+.menu-icon::after {
+    top: 6px;
 }
 
 .export-btn {
@@ -443,6 +493,10 @@ body {
 @media (max-width: 1024px) {
     .main-content {
         grid-template-columns: 1fr 1fr;
+    }
+
+    .menu-toggle {
+        display: flex;
     }
 
     .sidebar {
