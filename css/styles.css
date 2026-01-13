@@ -552,6 +552,34 @@ body {
     margin: 0 auto;
 }
 
+/* Mermaid Error Display */
+.mermaid-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 16px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    color: var(--error-color);
+}
+
+.mermaid-error-icon {
+    font-size: 1.5rem;
+}
+
+.mermaid-error-text {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.mermaid-error-detail {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+}
+
 /* Loading Overlay */
 .loading-overlay {
     position: fixed;

@@ -240,20 +240,11 @@ const PDFGenerator = (function() {
             requestAnimationFrame(resolve);
         }));
 
-        // Render Mermaid diagrams if enabled and library is available
-        if (settings.renderMermaid && typeof mermaid !== 'undefined') {
-            const mermaidElements = container.querySelectorAll('.mermaid');
-            if (mermaidElements.length > 0) {
-                try {
-                    await mermaid.run({
-                        nodes: mermaidElements
-                    });
-                    // Additional wait for SVG rendering to complete
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                } catch (error) {
-                    console.error('Mermaid rendering error in PDF:', error);
-                }
-            }
+        // Render Mermaid diagrams if enabled
+        if (settings.renderMermaid) {
+            await MermaidRenderer.render(container, { showErrors: false });
+            // Additional wait for SVG rendering to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
 
         try {

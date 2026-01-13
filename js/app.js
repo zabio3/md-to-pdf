@@ -15,7 +15,7 @@
             mermaid.initialize({
                 startOnLoad: false,  // We'll call mermaid.run() manually
                 theme: 'default',
-                securityLevel: 'loose',
+                securityLevel: 'strict',  // Use strict for security
                 fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
             });
         }

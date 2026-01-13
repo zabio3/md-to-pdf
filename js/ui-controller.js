@@ -131,18 +131,9 @@ const UIController = (function() {
         elements.previewContent.innerHTML = html;
         elements.previewContent.style.fontSize = `${settings.fontSize}px`;
 
-        // Render Mermaid diagrams if enabled and library is available
-        if (settings.renderMermaid && typeof mermaid !== 'undefined') {
-            const mermaidElements = elements.previewContent.querySelectorAll('.mermaid');
-            if (mermaidElements.length > 0) {
-                try {
-                    await mermaid.run({
-                        nodes: mermaidElements
-                    });
-                } catch (error) {
-                    console.error('Mermaid rendering error:', error);
-                }
-            }
+        // Render Mermaid diagrams if enabled
+        if (settings.renderMermaid) {
+            await MermaidRenderer.render(elements.previewContent, { showErrors: true });
         }
 
         // Calculate and add page break indicators after content is rendered
