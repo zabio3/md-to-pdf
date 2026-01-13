@@ -178,6 +178,17 @@ const PDFGenerator = (function() {
             el.style.padding = '0';
             el.style.height = '0';
         });
+
+        // Style Mermaid diagrams
+        container.querySelectorAll('.mermaid-container').forEach(el => {
+            el.style.margin = '1em 0';
+            el.style.textAlign = 'center';
+        });
+
+        container.querySelectorAll('.mermaid svg').forEach(el => {
+            el.style.maxWidth = '100%';
+            el.style.height = 'auto';
+        });
     }
 
     /**
@@ -228,6 +239,13 @@ const PDFGenerator = (function() {
         await new Promise(resolve => requestAnimationFrame(() => {
             requestAnimationFrame(resolve);
         }));
+
+        // Render Mermaid diagrams if enabled
+        if (settings.renderMermaid) {
+            await MermaidRenderer.render(container, { showErrors: false });
+            // Additional wait for SVG rendering to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
 
         try {
             if (settings.showPageNumbers) {

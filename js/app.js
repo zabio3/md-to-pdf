@@ -10,6 +10,16 @@
      * Initialize the application
      */
     function init() {
+        // Initialize Mermaid.js for diagram rendering
+        if (typeof mermaid !== 'undefined') {
+            mermaid.initialize({
+                startOnLoad: false,  // We'll call mermaid.run() manually
+                theme: 'default',
+                securityLevel: 'strict',  // Use strict for security
+                fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+            });
+        }
+
         // Initialize Markdown Parser
         MarkdownParser.initialize();
 

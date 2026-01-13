@@ -6,6 +6,17 @@
 const MarkdownParser = (function() {
     'use strict';
 
+    // Flag to control Mermaid diagram rendering
+    let mermaidEnabled = true;
+
+    /**
+     * Set Mermaid rendering enabled/disabled
+     * @param {boolean} enabled - Whether to render Mermaid diagrams
+     */
+    function setMermaidEnabled(enabled) {
+        mermaidEnabled = enabled;
+    }
+
     /**
      * Initialize Marked.js with custom configuration and extensions
      */
@@ -40,8 +51,35 @@ const MarkdownParser = (function() {
             }
         };
 
-        // Register the extension
-        marked.use({ extensions: [pagebreakExtension] });
+        // Custom renderer for code blocks to handle Mermaid
+        const renderer = {
+            code(code, language) {
+                // Handle code object format (marked v9+)
+                if (typeof code === 'object' && code !== null) {
+                    language = code.lang;
+                    code = code.text;
+                }
+
+                // Check if this is a mermaid block and rendering is enabled
+                if (language === 'mermaid' && mermaidEnabled) {
+                    // Return a container that Mermaid.js will process
+                    return `<div class="mermaid-container"><pre class="mermaid">${code}</pre></div>`;
+                }
+
+                // Default code block rendering
+                const escaped = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                if (language) {
+                    return `<pre><code class="language-${language}">${escaped}</code></pre>`;
+                }
+                return `<pre><code>${escaped}</code></pre>`;
+            }
+        };
+
+        // Register the extension and renderer
+        marked.use({
+            extensions: [pagebreakExtension],
+            renderer: renderer
+        });
 
         // Configure Marked.js options
         marked.setOptions({
@@ -71,6 +109,7 @@ const MarkdownParser = (function() {
     // Public API
     return {
         initialize,
-        parse
+        parse,
+        setMermaidEnabled
     };
 })();

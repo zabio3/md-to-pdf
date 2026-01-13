@@ -2,10 +2,13 @@
 
 A lightweight, client-side Markdown to PDF converter. No server required - runs entirely in your browser.
 
+**[Try it online](https://zabio3.github.io/md-to-pdf/)**
+
 ## Features
 
 - Real-time Markdown preview
 - PDF export with customizable options
+- **Mermaid diagram support** (flowcharts, sequence diagrams, etc.)
 - Page breaks support (`<!-- pagebreak -->`)
 - Paper size selection (A4, Letter, Legal, A3, A5)
 - Margin adjustment
@@ -16,7 +19,7 @@ A lightweight, client-side Markdown to PDF converter. No server required - runs 
 
 ### Online
 
-Visit the deployed GitHub Pages site (after deployment).
+Visit **https://zabio3.github.io/md-to-pdf/**
 
 ### Local Development
 
@@ -46,6 +49,29 @@ Insert page breaks in your Markdown using HTML comments:
 
 Note: `---` is rendered as a horizontal rule (standard Markdown behavior).
 
+### Mermaid Diagrams
+
+Create diagrams using Mermaid syntax in fenced code blocks:
+
+````markdown
+```mermaid
+flowchart TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Process]
+    B -->|No| D[End]
+```
+````
+
+Supported diagram types:
+- Flowcharts
+- Sequence diagrams
+- Class diagrams
+- State diagrams
+- Entity Relationship diagrams
+- And more ([Mermaid documentation](https://mermaid.js.org/intro/))
+
+Mermaid rendering can be toggled on/off in **Settings > 詳細設定 > Mermaidダイアグラムを描画**.
+
 ### Keyboard Shortcuts
 
 - `Ctrl/Cmd + S`: Export to PDF
@@ -54,6 +80,7 @@ Note: `---` is rendered as a horizontal rule (standard Markdown behavior).
 
 - Vanilla JavaScript (no frameworks)
 - [Marked.js](https://marked.js.org/) - Markdown parsing
+- [Mermaid.js](https://mermaid.js.org/) - Diagram rendering
 - [html2pdf.js](https://ekoopmans.github.io/html2pdf.js/) - PDF generation
 - GitHub Pages - Hosting
 
