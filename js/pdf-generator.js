@@ -6,13 +6,22 @@
 const PDFGenerator = (function() {
     'use strict';
 
-    // Paper size configurations (in mm)
+    // Paper size configurations for jsPDF
     const PAPER_SIZES = {
         'a4': 'a4',
         'letter': 'letter',
         'legal': 'legal',
         'a3': 'a3',
         'a5': 'a5'
+    };
+
+    // Paper widths in mm for container sizing
+    const PAPER_WIDTHS = {
+        'a4': '210mm',
+        'letter': '216mm',
+        'legal': '216mm',
+        'a3': '297mm',
+        'a5': '148mm'
     };
 
     /**
@@ -185,7 +194,7 @@ const PDFGenerator = (function() {
         container.style.position = 'absolute';
         container.style.left = '-9999px';
         container.style.top = '0';
-        container.style.width = '210mm'; // A4 width as default reference
+        container.style.width = PAPER_WIDTHS[settings.paperSize] || '210mm';
         document.body.appendChild(container);
 
         try {
