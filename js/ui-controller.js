@@ -41,7 +41,10 @@ const UIController = (function() {
             fontSize: document.getElementById('font-size'),
             fontSizeDisplay: document.getElementById('font-size-display'),
             sidebar: document.querySelector('.sidebar'),
-            menuToggle: document.getElementById('menu-toggle')
+            menuToggle: document.getElementById('menu-toggle'),
+            showPageNumbers: document.getElementById('show-page-numbers'),
+            advancedToggle: document.getElementById('advanced-toggle'),
+            advancedSettings: document.getElementById('advanced-settings')
         };
     }
 
@@ -72,6 +75,16 @@ const UIController = (function() {
         if (elements.menuToggle) {
             elements.menuToggle.addEventListener('click', toggleSidebar);
         }
+
+        // Advanced settings toggle
+        if (elements.advancedToggle) {
+            elements.advancedToggle.addEventListener('click', toggleAdvancedSettings);
+        }
+
+        // Page numbers checkbox
+        if (elements.showPageNumbers) {
+            elements.showPageNumbers.addEventListener('change', updatePreview);
+        }
     }
 
     /**
@@ -83,6 +96,17 @@ const UIController = (function() {
     }
 
     /**
+     * Paper dimensions in mm
+     */
+    const PAPER_DIMENSIONS = {
+        'a4': { width: 210, height: 297 },
+        'letter': { width: 215.9, height: 279.4 },
+        'legal': { width: 215.9, height: 355.6 },
+        'a3': { width: 297, height: 420 },
+        'a5': { width: 148, height: 210 }
+    };
+
+    /**
      * Update the preview panel
      */
     function updatePreview() {
@@ -92,6 +116,52 @@ const UIController = (function() {
 
         elements.previewContent.innerHTML = html;
         elements.previewContent.style.fontSize = `${settings.fontSize}px`;
+
+        // Calculate and add page break indicators after content is rendered
+        requestAnimationFrame(() => {
+            addPageBreakIndicators(settings);
+        });
+    }
+
+    /**
+     * Add visual page break indicators to the preview
+     * @param {Object} settings - Current settings
+     */
+    function addPageBreakIndicators(settings) {
+        const container = elements.previewContent;
+        const paperSize = settings.paperSize || 'a4';
+        const dimensions = PAPER_DIMENSIONS[paperSize];
+
+        // Calculate content height per page (in pixels, assuming 96dpi)
+        // 1mm = 3.7795275591 pixels at 96dpi
+        const MM_TO_PX = 3.7795275591;
+        const pageHeight = (dimensions.height - settings.margins.top - settings.margins.bottom) * MM_TO_PX;
+
+        // Remove existing auto page breaks and page number display
+        container.querySelectorAll('.auto-page-break, .page-number-display').forEach(el => el.remove());
+
+        // Get total content height
+        const contentHeight = container.scrollHeight;
+        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+
+        // Add page break indicators if more than 1 page
+        if (totalPages > 1) {
+            for (let page = 1; page < totalPages; page++) {
+                const breakIndicator = document.createElement('div');
+                breakIndicator.className = 'auto-page-break';
+                breakIndicator.setAttribute('data-page-label', `${page} / ${totalPages}`);
+                breakIndicator.style.top = `${page * pageHeight}px`;
+                container.appendChild(breakIndicator);
+            }
+        }
+
+        // Add page count display at bottom if page numbers enabled
+        if (settings.showPageNumbers) {
+            const pageDisplay = document.createElement('div');
+            pageDisplay.className = 'page-number-display';
+            pageDisplay.textContent = `${totalPages} ページ`;
+            container.appendChild(pageDisplay);
+        }
     }
 
     /**
@@ -159,7 +229,8 @@ const UIController = (function() {
                 bottom: parseFloat(elements.marginBottom.value) || 10,
                 left: parseFloat(elements.marginLeft.value) || 10
             },
-            fontSize: parseInt(elements.fontSize.value) || 14
+            fontSize: parseInt(elements.fontSize.value) || 14,
+            showPageNumbers: elements.showPageNumbers ? elements.showPageNumbers.checked : true
         };
     }
 
@@ -179,6 +250,15 @@ const UIController = (function() {
      */
     function toggleSidebar() {
         elements.sidebar.classList.toggle('open');
+    }
+
+    /**
+     * Toggle advanced settings visibility
+     */
+    function toggleAdvancedSettings() {
+        const isHidden = elements.advancedSettings.hidden;
+        elements.advancedSettings.hidden = !isHidden;
+        elements.advancedToggle.classList.toggle('expanded', !isHidden);
     }
 
     // Public API

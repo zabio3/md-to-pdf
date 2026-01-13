@@ -249,6 +249,66 @@ body {
     font-size: 0.7rem;
 }
 
+/* Advanced Settings Toggle */
+.advanced-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: left;
+}
+
+.advanced-toggle:hover {
+    color: var(--accent-color);
+}
+
+.advanced-toggle-icon {
+    width: 0;
+    height: 0;
+    border-left: 5px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    transition: transform 0.2s ease;
+}
+
+.advanced-toggle.expanded .advanced-toggle-icon {
+    transform: rotate(90deg);
+}
+
+.advanced-settings {
+    padding: 12px 0 0 0;
+}
+
+.advanced-settings[hidden] {
+    display: none;
+}
+
+.setting-item {
+    margin-bottom: 12px;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.setting-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent-color);
+}
+
 /* Editor Panel */
 .editor-panel {
     display: flex;
@@ -303,6 +363,7 @@ body {
     padding: 24px;
     display: flex;
     justify-content: center;
+    align-items: flex-start;
 }
 
 .preview-content {
@@ -313,6 +374,8 @@ body {
     padding: 20mm;
     box-shadow: var(--shadow-lg);
     line-height: 1.8;
+    margin-bottom: 24px;
+    position: relative;
 }
 
 /* Preview Content Styling (Markdown Rendered) */
@@ -434,6 +497,37 @@ body {
     font-size: 0.75rem;
     color: var(--accent-color);
     font-weight: 500;
+}
+
+/* Automatic Page Break Indicator */
+.auto-page-break {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0;
+    border-top: 1px dashed var(--text-muted);
+    pointer-events: none;
+}
+
+.auto-page-break::before {
+    content: attr(data-page-label);
+    position: absolute;
+    top: -10px;
+    right: 0;
+    background: var(--bg-secondary);
+    padding: 0 8px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* Page Number Display */
+.page-number-display {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 20px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
 }
 
 /* Loading Overlay */

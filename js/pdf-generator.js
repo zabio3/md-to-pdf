@@ -181,6 +181,33 @@ const PDFGenerator = (function() {
     }
 
     /**
+     * Add page numbers to all pages of a jsPDF document
+     * @param {jsPDF} pdf - The jsPDF instance
+     */
+    function addPageNumbersToPdf(pdf) {
+        const totalPages = pdf.internal.getNumberOfPages();
+
+        for (let i = 1; i <= totalPages; i++) {
+            pdf.setPage(i);
+
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            // Set font for page numbers
+            pdf.setFontSize(10);
+            pdf.setTextColor(128, 128, 128);
+
+            // Add centered page number at bottom
+            const text = `${i} / ${totalPages}`;
+            const textWidth = pdf.getStringUnitWidth(text) * pdf.getFontSize() / pdf.internal.scaleFactor;
+            const xPos = (pageWidth - textWidth) / 2;
+            const yPos = pageHeight - 10;
+
+            pdf.text(text, xPos, yPos);
+        }
+    }
+
+    /**
      * Generate PDF from HTML content
      * @param {string} htmlContent - HTML content to convert
      * @param {Object} settings - User settings
@@ -203,10 +230,23 @@ const PDFGenerator = (function() {
         }));
 
         try {
-            await html2pdf()
-                .set(options)
-                .from(container)
-                .save();
+            if (settings.showPageNumbers) {
+                // Use toPdf() to get jsPDF instance, modify it, then save
+                await html2pdf()
+                    .set(options)
+                    .from(container)
+                    .toPdf()
+                    .get('pdf')
+                    .then(pdf => {
+                        addPageNumbersToPdf(pdf);
+                    })
+                    .save();
+            } else {
+                await html2pdf()
+                    .set(options)
+                    .from(container)
+                    .save();
+            }
         } finally {
             // Clean up
             document.body.removeChild(container);

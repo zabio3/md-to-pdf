@@ -73,6 +73,22 @@
                     <input type="range" id="font-size" min="10" max="24" value="14">
                 </div>
 
+                <!-- Advanced Settings -->
+                <div class="setting-group">
+                    <button type="button" id="advanced-toggle" class="advanced-toggle">
+                        <span class="advanced-toggle-icon"></span>
+                        <span>詳細設定</span>
+                    </button>
+                    <div id="advanced-settings" class="advanced-settings" hidden>
+                        <div class="setting-item">
+                            <label for="show-page-numbers">
+                                <input type="checkbox" id="show-page-numbers" checked>
+                                ページ番号を表示
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Pagebreak Hint -->
                 <div class="setting-group hint">
                     <p>Page break: use <code>&lt;!-- pagebreak --&gt;</code></p>
