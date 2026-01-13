@@ -197,6 +197,11 @@ const PDFGenerator = (function() {
         container.style.width = PAPER_WIDTHS[settings.paperSize] || '210mm';
         document.body.appendChild(container);
 
+        // Wait for browser to render the container before capturing
+        await new Promise(resolve => requestAnimationFrame(() => {
+            requestAnimationFrame(resolve);
+        }));
+
         try {
             await html2pdf()
                 .set(options)
