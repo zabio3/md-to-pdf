@@ -219,6 +219,31 @@ const PDFGenerator = (function() {
     }
 
     /**
+     * Wait for container to be fully rendered
+     * @param {HTMLElement} container - The container to check
+     * @param {number} maxWait - Maximum wait time in ms
+     * @returns {Promise} Promise that resolves when container is rendered
+     */
+    async function waitForRender(container, maxWait = 3000) {
+        // Wait for fonts to be ready
+        if (document.fonts && document.fonts.ready) {
+            await document.fonts.ready;
+        }
+
+        // Poll until container has dimensions or max wait reached
+        const startTime = Date.now();
+        while (Date.now() - startTime < maxWait) {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+            if (container.offsetHeight > 0 && container.offsetWidth > 0) {
+                // Additional frame to ensure paint is complete
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                return;
+            }
+        }
+        console.warn('waitForRender: timeout reached, container may not be fully rendered');
+    }
+
+    /**
      * Generate PDF from HTML content
      * @param {string} htmlContent - HTML content to convert
      * @param {Object} settings - User settings
@@ -235,15 +260,13 @@ const PDFGenerator = (function() {
         container.style.width = PAPER_WIDTHS[settings.paperSize] || '210mm';
         document.body.appendChild(container);
 
-        // Wait for browser to render the container before capturing
-        await new Promise(resolve => requestAnimationFrame(() => {
-            requestAnimationFrame(resolve);
-        }));
+        // Wait for container to be fully rendered
+        await waitForRender(container);
 
         // Render Mermaid diagrams if enabled
         if (settings.renderMermaid) {
             await MermaidRenderer.render(container, { showErrors: false });
-            // Additional wait for SVG rendering to complete
+            // Wait for SVG rendering to complete
             await new Promise(resolve => setTimeout(resolve, 100));
         }
 
