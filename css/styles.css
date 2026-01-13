@@ -530,6 +530,28 @@ body {
     border-top: 1px solid var(--border-color);
 }
 
+/* Mermaid Diagram Styling */
+.mermaid-container {
+    margin: 1em 0;
+    text-align: center;
+}
+
+.mermaid-container .mermaid {
+    background: transparent;
+    padding: 0;
+}
+
+.mermaid-container svg {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Error state for failed Mermaid diagrams */
+.mermaid-container .mermaid[data-processed="true"] svg {
+    display: block;
+    margin: 0 auto;
+}
+
 /* Loading Overlay */
 .loading-overlay {
     position: fixed;

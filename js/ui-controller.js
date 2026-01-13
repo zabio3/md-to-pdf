@@ -44,7 +44,8 @@ const UIController = (function() {
             menuToggle: document.getElementById('menu-toggle'),
             showPageNumbers: document.getElementById('show-page-numbers'),
             advancedToggle: document.getElementById('advanced-toggle'),
-            advancedSettings: document.getElementById('advanced-settings')
+            advancedSettings: document.getElementById('advanced-settings'),
+            renderMermaid: document.getElementById('render-mermaid')
         };
     }
 
@@ -85,6 +86,19 @@ const UIController = (function() {
         if (elements.showPageNumbers) {
             elements.showPageNumbers.addEventListener('change', updatePreview);
         }
+
+        // Mermaid rendering checkbox
+        if (elements.renderMermaid) {
+            elements.renderMermaid.addEventListener('change', handleMermaidToggle);
+        }
+    }
+
+    /**
+     * Handle Mermaid rendering toggle
+     */
+    function handleMermaidToggle() {
+        MarkdownParser.setMermaidEnabled(elements.renderMermaid.checked);
+        updatePreview();
     }
 
     /**
@@ -109,13 +123,27 @@ const UIController = (function() {
     /**
      * Update the preview panel
      */
-    function updatePreview() {
+    async function updatePreview() {
         const markdown = elements.markdownInput.value;
         const html = MarkdownParser.parse(markdown);
         const settings = getSettings();
 
         elements.previewContent.innerHTML = html;
         elements.previewContent.style.fontSize = `${settings.fontSize}px`;
+
+        // Render Mermaid diagrams if enabled and library is available
+        if (settings.renderMermaid && typeof mermaid !== 'undefined') {
+            const mermaidElements = elements.previewContent.querySelectorAll('.mermaid');
+            if (mermaidElements.length > 0) {
+                try {
+                    await mermaid.run({
+                        nodes: mermaidElements
+                    });
+                } catch (error) {
+                    console.error('Mermaid rendering error:', error);
+                }
+            }
+        }
 
         // Calculate and add page break indicators after content is rendered
         requestAnimationFrame(() => {
@@ -230,7 +258,8 @@ const UIController = (function() {
                 left: parseFloat(elements.marginLeft.value) || 10
             },
             fontSize: parseInt(elements.fontSize.value) || 14,
-            showPageNumbers: elements.showPageNumbers ? elements.showPageNumbers.checked : true
+            showPageNumbers: elements.showPageNumbers ? elements.showPageNumbers.checked : true,
+            renderMermaid: elements.renderMermaid ? elements.renderMermaid.checked : true
         };
     }
 
