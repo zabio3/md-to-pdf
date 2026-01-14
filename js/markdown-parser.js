@@ -9,12 +9,35 @@ const MarkdownParser = (function() {
     // Flag to control Mermaid diagram rendering
     let mermaidEnabled = true;
 
+    // Flag to control Smartypants typography
+    let smartypantsEnabled = true;
+
+    // Flag to control syntax highlighting
+    let syntaxHighlightEnabled = true;
+
     /**
      * Set Mermaid rendering enabled/disabled
      * @param {boolean} enabled - Whether to render Mermaid diagrams
      */
     function setMermaidEnabled(enabled) {
         mermaidEnabled = enabled;
+    }
+
+    /**
+     * Set Smartypants typography enabled/disabled
+     * @param {boolean} enabled - Whether to apply typography improvements
+     */
+    function setSmartypantsEnabled(enabled) {
+        smartypantsEnabled = enabled;
+        updateMarkedOptions();
+    }
+
+    /**
+     * Set syntax highlighting enabled/disabled
+     * @param {boolean} enabled - Whether to apply syntax highlighting
+     */
+    function setSyntaxHighlightEnabled(enabled) {
+        syntaxHighlightEnabled = enabled;
     }
 
     /**
@@ -51,7 +74,7 @@ const MarkdownParser = (function() {
             }
         };
 
-        // Custom renderer for code blocks to handle Mermaid
+        // Custom renderer for code blocks to handle Mermaid and syntax highlighting
         const renderer = {
             code(code, language) {
                 // Handle code object format (marked v9+)
@@ -66,7 +89,23 @@ const MarkdownParser = (function() {
                     return `<div class="mermaid-container"><pre class="mermaid">${code}</pre></div>`;
                 }
 
-                // Default code block rendering
+                // Apply syntax highlighting if highlight.js is available and enabled
+                if (syntaxHighlightEnabled && typeof hljs !== 'undefined') {
+                    try {
+                        let highlighted;
+                        if (language && hljs.getLanguage(language)) {
+                            highlighted = hljs.highlight(code, { language: language }).value;
+                        } else {
+                            highlighted = hljs.highlightAuto(code).value;
+                        }
+                        const langClass = language ? ` language-${language}` : '';
+                        return `<pre><code class="hljs${langClass}">${highlighted}</code></pre>`;
+                    } catch (error) {
+                        console.warn('Highlight.js error:', error);
+                    }
+                }
+
+                // Fallback: escape HTML and return without highlighting
                 const escaped = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
                 if (language) {
                     return `<pre><code class="language-${language}">${escaped}</code></pre>`;
@@ -84,7 +123,19 @@ const MarkdownParser = (function() {
         // Configure Marked.js options
         marked.setOptions({
             gfm: true,      // GitHub Flavored Markdown
-            breaks: true    // Convert \n to <br>
+            breaks: true,   // Convert \n to <br>
+            smartypants: smartypantsEnabled  // Typography improvements
+        });
+    }
+
+    /**
+     * Re-apply marked options (call after changing settings)
+     */
+    function updateMarkedOptions() {
+        marked.setOptions({
+            gfm: true,
+            breaks: true,
+            smartypants: smartypantsEnabled
         });
     }
 
@@ -110,6 +161,8 @@ const MarkdownParser = (function() {
     return {
         initialize,
         parse,
-        setMermaidEnabled
+        setMermaidEnabled,
+        setSmartypantsEnabled,
+        setSyntaxHighlightEnabled
     };
 })();

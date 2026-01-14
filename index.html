@@ -9,6 +9,9 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
     <!-- Mermaid.js for diagram rendering -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <!-- Highlight.js for syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
 </head>
 <body>
     <div class="app-container">
@@ -41,6 +44,15 @@
                         <option value="legal">Legal (8.5 x 14 in)</option>
                         <option value="a3">A3 (297 x 420 mm)</option>
                         <option value="a5">A5 (148 x 210 mm)</option>
+                    </select>
+                </div>
+
+                <!-- Orientation -->
+                <div class="setting-group">
+                    <label for="orientation">Orientation</label>
+                    <select id="orientation">
+                        <option value="portrait" selected>Portrait (縦)</option>
+                        <option value="landscape">Landscape (横)</option>
                     </select>
                 </div>
 
@@ -85,6 +97,46 @@
                                 <input type="checkbox" id="render-mermaid" checked>
                                 Render Mermaid diagrams
                             </label>
+                        </div>
+                        <div class="setting-item">
+                            <label for="syntax-highlight">
+                                <input type="checkbox" id="syntax-highlight" checked>
+                                シンタックスハイライト
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label for="smartypants">
+                                <input type="checkbox" id="smartypants" checked>
+                                タイポグラフィ改善
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <label for="print-background">
+                                <input type="checkbox" id="print-background" checked>
+                                背景色を印刷
+                            </label>
+                        </div>
+                        <div class="setting-divider"></div>
+                        <div class="setting-item">
+                            <label for="enable-header">
+                                <input type="checkbox" id="enable-header">
+                                ヘッダー
+                            </label>
+                        </div>
+                        <div class="setting-item" id="header-input-group" hidden>
+                            <input type="text" id="header-template" placeholder="{title}" class="template-input">
+                        </div>
+                        <div class="setting-item">
+                            <label for="enable-footer">
+                                <input type="checkbox" id="enable-footer" checked>
+                                フッター
+                            </label>
+                        </div>
+                        <div class="setting-item" id="footer-input-group">
+                            <input type="text" id="footer-template" value="{date}" class="template-input">
+                        </div>
+                        <div class="setting-hint">
+                            <small>{date}, {title}</small>
                         </div>
                     </div>
                 </div>

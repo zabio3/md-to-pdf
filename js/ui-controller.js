@@ -34,6 +34,7 @@ const UIController = (function() {
             exportBtnLoading: document.querySelector('.export-btn-loading'),
             loadingOverlay: document.getElementById('loading-overlay'),
             paperSize: document.getElementById('paper-size'),
+            orientation: document.getElementById('orientation'),
             marginTop: document.getElementById('margin-top'),
             marginRight: document.getElementById('margin-right'),
             marginBottom: document.getElementById('margin-bottom'),
@@ -44,7 +45,16 @@ const UIController = (function() {
             menuToggle: document.getElementById('menu-toggle'),
             advancedToggle: document.getElementById('advanced-toggle'),
             advancedSettings: document.getElementById('advanced-settings'),
-            renderMermaid: document.getElementById('render-mermaid')
+            renderMermaid: document.getElementById('render-mermaid'),
+            syntaxHighlight: document.getElementById('syntax-highlight'),
+            smartypants: document.getElementById('smartypants'),
+            printBackground: document.getElementById('print-background'),
+            enableHeader: document.getElementById('enable-header'),
+            headerTemplate: document.getElementById('header-template'),
+            headerInputGroup: document.getElementById('header-input-group'),
+            enableFooter: document.getElementById('enable-footer'),
+            footerTemplate: document.getElementById('footer-template'),
+            footerInputGroup: document.getElementById('footer-input-group')
         };
     }
 
@@ -85,6 +95,44 @@ const UIController = (function() {
         if (elements.renderMermaid) {
             elements.renderMermaid.addEventListener('change', handleMermaidToggle);
         }
+
+        // Syntax highlighting checkbox
+        if (elements.syntaxHighlight) {
+            elements.syntaxHighlight.addEventListener('change', handleSyntaxHighlightToggle);
+        }
+
+        // Smartypants checkbox
+        if (elements.smartypants) {
+            elements.smartypants.addEventListener('change', handleSmartypantsToggle);
+        }
+
+        // Orientation change
+        if (elements.orientation) {
+            elements.orientation.addEventListener('change', updatePreview);
+        }
+
+        // Print background change
+        if (elements.printBackground) {
+            elements.printBackground.addEventListener('change', updatePreview);
+        }
+
+        // Header toggle
+        if (elements.enableHeader) {
+            elements.enableHeader.addEventListener('change', handleHeaderToggle);
+        }
+
+        // Footer toggle
+        if (elements.enableFooter) {
+            elements.enableFooter.addEventListener('change', handleFooterToggle);
+        }
+
+        // Header/footer template changes
+        if (elements.headerTemplate) {
+            elements.headerTemplate.addEventListener('input', updatePreview);
+        }
+        if (elements.footerTemplate) {
+            elements.footerTemplate.addEventListener('input', updatePreview);
+        }
     }
 
     /**
@@ -92,6 +140,42 @@ const UIController = (function() {
      */
     function handleMermaidToggle() {
         MarkdownParser.setMermaidEnabled(elements.renderMermaid.checked);
+        updatePreview();
+    }
+
+    /**
+     * Handle syntax highlighting toggle
+     */
+    function handleSyntaxHighlightToggle() {
+        MarkdownParser.setSyntaxHighlightEnabled(elements.syntaxHighlight.checked);
+        updatePreview();
+    }
+
+    /**
+     * Handle Smartypants typography toggle
+     */
+    function handleSmartypantsToggle() {
+        MarkdownParser.setSmartypantsEnabled(elements.smartypants.checked);
+        updatePreview();
+    }
+
+    /**
+     * Handle header toggle
+     */
+    function handleHeaderToggle() {
+        if (elements.headerInputGroup) {
+            elements.headerInputGroup.hidden = !elements.enableHeader.checked;
+        }
+        updatePreview();
+    }
+
+    /**
+     * Handle footer toggle
+     */
+    function handleFooterToggle() {
+        if (elements.footerInputGroup) {
+            elements.footerInputGroup.hidden = !elements.enableFooter.checked;
+        }
         updatePreview();
     }
 
@@ -183,6 +267,12 @@ const UIController = (function() {
                 container.appendChild(breakIndicator);
             }
         }
+
+        // Add page count display at bottom
+        const pageDisplay = document.createElement('div');
+        pageDisplay.className = 'page-number-display';
+        pageDisplay.textContent = `${totalPages} page${totalPages > 1 ? 's' : ''}`;
+        container.appendChild(pageDisplay);
     }
 
     /**
@@ -203,17 +293,26 @@ const UIController = (function() {
 
     /**
      * Handle export button click
-     * Note: Uses native browser print dialog. Loading state and error handling
-     * are not applicable since window.print() is synchronous and doesn't throw.
      */
-    function handleExport() {
+    async function handleExport() {
         const markdown = elements.markdownInput.value;
         if (!markdown.trim()) {
             alert('Please enter some markdown content first.');
             return;
         }
 
-        PDFGenerator.generate();
+        showLoading(true);
+
+        try {
+            const html = MarkdownParser.parse(markdown);
+            const settings = getSettings();
+            await PDFGenerator.generate(html, settings);
+        } catch (error) {
+            console.error('PDF generation error:', error);
+            alert('Error generating PDF. Please try again.');
+        } finally {
+            showLoading(false);
+        }
     }
 
     /**
@@ -235,6 +334,7 @@ const UIController = (function() {
     function getSettings() {
         return {
             paperSize: elements.paperSize.value,
+            orientation: elements.orientation ? elements.orientation.value : 'portrait',
             margins: {
                 top: parseFloat(elements.marginTop.value) || 10,
                 right: parseFloat(elements.marginRight.value) || 10,
@@ -242,7 +342,14 @@ const UIController = (function() {
                 left: parseFloat(elements.marginLeft.value) || 10
             },
             fontSize: parseInt(elements.fontSize.value) || 14,
-            renderMermaid: elements.renderMermaid ? elements.renderMermaid.checked : true
+            renderMermaid: elements.renderMermaid ? elements.renderMermaid.checked : true,
+            syntaxHighlight: elements.syntaxHighlight ? elements.syntaxHighlight.checked : true,
+            smartypants: elements.smartypants ? elements.smartypants.checked : true,
+            printBackground: elements.printBackground ? elements.printBackground.checked : true,
+            enableHeader: elements.enableHeader ? elements.enableHeader.checked : false,
+            headerTemplate: elements.headerTemplate ? elements.headerTemplate.value : '',
+            enableFooter: elements.enableFooter ? elements.enableFooter.checked : true,
+            footerTemplate: elements.footerTemplate ? elements.footerTemplate.value : '{date}'
         };
     }
 
