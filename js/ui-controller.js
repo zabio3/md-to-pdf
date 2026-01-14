@@ -42,7 +42,6 @@ const UIController = (function() {
             fontSizeDisplay: document.getElementById('font-size-display'),
             sidebar: document.querySelector('.sidebar'),
             menuToggle: document.getElementById('menu-toggle'),
-            showPageNumbers: document.getElementById('show-page-numbers'),
             advancedToggle: document.getElementById('advanced-toggle'),
             advancedSettings: document.getElementById('advanced-settings'),
             renderMermaid: document.getElementById('render-mermaid')
@@ -80,11 +79,6 @@ const UIController = (function() {
         // Advanced settings toggle
         if (elements.advancedToggle) {
             elements.advancedToggle.addEventListener('click', toggleAdvancedSettings);
-        }
-
-        // Page numbers checkbox
-        if (elements.showPageNumbers) {
-            elements.showPageNumbers.addEventListener('change', updatePreview);
         }
 
         // Mermaid rendering checkbox
@@ -156,8 +150,8 @@ const UIController = (function() {
         const MM_TO_PX = 3.7795275591;
         const pageHeight = (dimensions.height - settings.margins.top - settings.margins.bottom) * MM_TO_PX;
 
-        // Remove existing auto page breaks and page number display
-        container.querySelectorAll('.auto-page-break, .page-number-display').forEach(el => el.remove());
+        // Remove existing auto page breaks
+        container.querySelectorAll('.auto-page-break').forEach(el => el.remove());
 
         // Get actual content height (not affected by CSS min-height)
         // Calculate by finding the bottom position of the last content element
@@ -165,9 +159,8 @@ const UIController = (function() {
         const children = container.children;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            // Skip page break indicators and page number display
-            if (child.classList.contains('auto-page-break') ||
-                child.classList.contains('page-number-display')) {
+            // Skip page break indicators
+            if (child.classList.contains('auto-page-break')) {
                 continue;
             }
             const rect = child.getBoundingClientRect();
@@ -190,14 +183,6 @@ const UIController = (function() {
                 container.appendChild(breakIndicator);
             }
         }
-
-        // Add page count display at bottom if page numbers enabled
-        if (settings.showPageNumbers) {
-            const pageDisplay = document.createElement('div');
-            pageDisplay.className = 'page-number-display';
-            pageDisplay.textContent = `${totalPages} page${totalPages > 1 ? 's' : ''}`;
-            container.appendChild(pageDisplay);
-        }
     }
 
     /**
@@ -218,26 +203,17 @@ const UIController = (function() {
 
     /**
      * Handle export button click
+     * Note: Uses native browser print dialog. Loading state and error handling
+     * are not applicable since window.print() is synchronous and doesn't throw.
      */
-    async function handleExport() {
+    function handleExport() {
         const markdown = elements.markdownInput.value;
         if (!markdown.trim()) {
             alert('Please enter some markdown content first.');
             return;
         }
 
-        showLoading(true);
-
-        try {
-            const html = MarkdownParser.parse(markdown);
-            const settings = getSettings();
-            await PDFGenerator.generate(html, settings);
-        } catch (error) {
-            console.error('PDF generation error:', error);
-            alert('Error generating PDF. Please try again.');
-        } finally {
-            showLoading(false);
-        }
+        PDFGenerator.generate();
     }
 
     /**
@@ -266,7 +242,6 @@ const UIController = (function() {
                 left: parseFloat(elements.marginLeft.value) || 10
             },
             fontSize: parseInt(elements.fontSize.value) || 14,
-            showPageNumbers: elements.showPageNumbers ? elements.showPageNumbers.checked : true,
             renderMermaid: elements.renderMermaid ? elements.renderMermaid.checked : true
         };
     }
@@ -295,7 +270,7 @@ const UIController = (function() {
     function toggleAdvancedSettings() {
         const isHidden = elements.advancedSettings.hidden;
         elements.advancedSettings.hidden = !isHidden;
-        elements.advancedToggle.classList.toggle('expanded', !isHidden);
+        elements.advancedToggle.classList.toggle('expanded', isHidden);
     }
 
     // Public API
