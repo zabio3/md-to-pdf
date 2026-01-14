@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,8 +7,6 @@
     <link rel="stylesheet" href="css/styles.css">
     <!-- Marked.js for Markdown parsing -->
     <script src="https://cdn.jsdelivr.net/npm/marked@9.1.6/marked.min.js"></script>
-    <!-- html2pdf.js for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <!-- Mermaid.js for diagram rendering -->
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
     <!-- Highlight.js for syntax highlighting -->
@@ -37,9 +35,9 @@
             <aside class="sidebar">
                 <h2 class="sidebar-title">Settings</h2>
 
-                <!-- Paper Size -->
+                <!-- Paper Size (affects preview page breaks) -->
                 <div class="setting-group">
-                    <label for="paper-size">Paper Size</label>
+                    <label for="paper-size">Paper Size <small>(preview)</small></label>
                     <select id="paper-size">
                         <option value="a4" selected>A4 (210 x 297 mm)</option>
                         <option value="letter">Letter (8.5 x 11 in)</option>
@@ -58,9 +56,9 @@
                     </select>
                 </div>
 
-                <!-- Margins -->
+                <!-- Margins (affects preview page breaks) -->
                 <div class="setting-group">
-                    <label>Margins (mm)</label>
+                    <label>Margins (mm) <small>(preview)</small></label>
                     <div class="margin-inputs">
                         <div class="margin-input">
                             <label for="margin-top">Top</label>
@@ -91,13 +89,13 @@
                 <div class="setting-group">
                     <button type="button" id="advanced-toggle" class="advanced-toggle">
                         <span class="advanced-toggle-icon"></span>
-                        <span>詳細設定</span>
+                        <span>Advanced Settings</span>
                     </button>
                     <div id="advanced-settings" class="advanced-settings" hidden>
                         <div class="setting-item">
                             <label for="render-mermaid">
                                 <input type="checkbox" id="render-mermaid" checked>
-                                Mermaidダイアグラムを描画
+                                Render Mermaid diagrams
                             </label>
                         </div>
                         <div class="setting-item">

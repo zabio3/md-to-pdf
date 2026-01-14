@@ -573,16 +573,6 @@ body {
     color: var(--text-muted);
 }
 
-/* Page Number Display */
-.page-number-display {
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-top: 20px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border-color);
-}
-
 /* Mermaid Diagram Styling */
 .mermaid-container {
     margin: 1em 0;
@@ -674,16 +664,112 @@ body {
     }
 }
 
-/* Print Styles for PDF */
+/* Print Styles for PDF Export */
 @media print {
+    /* Reset */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body {
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Hide all UI elements */
+    .header,
+    .sidebar,
+    .editor-panel,
+    .panel-title,
+    .loading-overlay,
+    .auto-page-break {
+        display: none !important;
+    }
+
+    /* App container reset */
+    .app-container {
+        display: block !important;
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    /* Main content reset */
+    .main-content {
+        display: block !important;
+        overflow: visible !important;
+    }
+
+    /* Preview panel - full width */
+    .preview-panel {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+    }
+
+    .preview-container {
+        display: block !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+    }
+
+    /* Preview content - main printed area */
+    .preview-content {
+        width: 100% !important;
+        max-width: none !important;
+        min-height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        background: white !important;
+    }
+
+    /* Page break handling */
     .page-break {
-        border: none;
-        margin: 0;
-        padding: 0;
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        page-break-before: always !important;
+        break-before: page !important;
     }
 
     .page-break::after {
-        display: none;
+        display: none !important;
+    }
+
+    /* Prevent orphans/widows */
+    p, h1, h2, h3, h4, h5, h6 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    /* Tables and images should not break across pages */
+    table, img, .mermaid-container {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Code blocks */
+    pre {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+    }
+
+    /* Links - show URL in print */
+    a[href]:after {
+        content: none !important;
     }
 }
 

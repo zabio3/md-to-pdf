@@ -234,8 +234,8 @@ const UIController = (function() {
         const MM_TO_PX = 3.7795275591;
         const pageHeight = (dimensions.height - settings.margins.top - settings.margins.bottom) * MM_TO_PX;
 
-        // Remove existing auto page breaks and page number display
-        container.querySelectorAll('.auto-page-break, .page-number-display').forEach(el => el.remove());
+        // Remove existing auto page breaks
+        container.querySelectorAll('.auto-page-break').forEach(el => el.remove());
 
         // Get actual content height (not affected by CSS min-height)
         // Calculate by finding the bottom position of the last content element
@@ -243,9 +243,8 @@ const UIController = (function() {
         const children = container.children;
         for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            // Skip page break indicators and page number display
-            if (child.classList.contains('auto-page-break') ||
-                child.classList.contains('page-number-display')) {
+            // Skip page break indicators
+            if (child.classList.contains('auto-page-break')) {
                 continue;
             }
             const rect = child.getBoundingClientRect();
