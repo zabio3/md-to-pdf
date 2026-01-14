@@ -8,11 +8,15 @@ A lightweight, client-side Markdown to PDF converter. No server required - runs 
 
 - Real-time Markdown preview
 - PDF export with customizable options
+- **Syntax highlighting** (highlight.js with multiple themes)
 - **Mermaid diagram support** (flowcharts, sequence diagrams, etc.)
+- **Custom header/footer templates** with dynamic values
 - Page breaks support (`<!-- pagebreak -->`)
 - Paper size selection (A4, Letter, Legal, A3, A5)
+- Paper orientation (Portrait / Landscape)
 - Margin adjustment
 - Font size control
+- Typography improvements (Smartypants)
 - GitHub Flavored Markdown support
 
 ## Usage
@@ -28,8 +32,10 @@ Visit **https://zabio3.github.io/md-to-pdf/**
 git clone <repo-url>
 cd md-to-pdf
 
-# Start a local server
-python3 -m http.server 8080
+# Start a local server (choose one)
+npx serve              # Node.js
+python3 -m http.server 8080  # Python
+php -S localhost:8080  # PHP
 
 # Open in browser
 open http://localhost:8080
@@ -48,6 +54,10 @@ Insert page breaks in your Markdown using HTML comments:
 ```
 
 Note: `---` is rendered as a horizontal rule (standard Markdown behavior).
+
+### Syntax Highlighting
+
+Code blocks are automatically syntax highlighted using highlight.js with the GitHub theme.
 
 ### Mermaid Diagrams
 
@@ -72,6 +82,25 @@ Supported diagram types:
 
 Mermaid rendering can be toggled on/off in **Settings > 詳細設定 > Mermaidダイアグラムを描画**.
 
+### Custom Header/Footer
+
+Add custom headers and footers to your PDF with dynamic values:
+
+| Token | Description |
+|-------|-------------|
+| `{date}` | Current date |
+| `{title}` | Document title (from first H1) |
+
+Example footer template: `{title} - {date}`
+
+Configure in **Settings > 詳細設定 > ヘッダー / フッター**.
+
+### Print Options
+
+Additional PDF options available:
+- **Orientation**: Portrait or Landscape
+- **Background printing**: Include background colors in PDF
+
 ### Keyboard Shortcuts
 
 - `Ctrl/Cmd + S`: Export to PDF
@@ -80,8 +109,9 @@ Mermaid rendering can be toggled on/off in **Settings > 詳細設定 > Mermaid�
 
 - Vanilla JavaScript (no frameworks)
 - [Marked.js](https://marked.js.org/) - Markdown parsing
+- [highlight.js](https://highlightjs.org/) - Syntax highlighting
 - [Mermaid.js](https://mermaid.js.org/) - Diagram rendering
-- [html2pdf.js](https://ekoopmans.github.io/html2pdf.js/) - PDF generation
+- Native browser print API - PDF generation
 - GitHub Pages - Hosting
 
 ## Deployment

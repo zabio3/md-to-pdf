@@ -15,14 +15,26 @@ const PDFGenerator = (function() {
         'a5': 'a5'
     };
 
-    // Paper widths in mm for container sizing
-    const PAPER_WIDTHS = {
-        'a4': '210mm',
-        'letter': '216mm',
-        'legal': '216mm',
-        'a3': '297mm',
-        'a5': '148mm'
+    // Paper dimensions in mm for container sizing
+    const PAPER_DIMENSIONS = {
+        'a4': { width: 210, height: 297 },
+        'letter': { width: 216, height: 279 },
+        'legal': { width: 216, height: 356 },
+        'a3': { width: 297, height: 420 },
+        'a5': { width: 148, height: 210 }
     };
+
+    /**
+     * Get paper width based on size and orientation
+     * @param {string} paperSize - Paper size key
+     * @param {string} orientation - 'portrait' or 'landscape'
+     * @returns {string} Width in mm
+     */
+    function getPaperWidth(paperSize, orientation) {
+        const dims = PAPER_DIMENSIONS[paperSize] || PAPER_DIMENSIONS['a4'];
+        const width = orientation === 'landscape' ? dims.height : dims.width;
+        return `${width}mm`;
+    }
 
     /**
      * Build html2pdf options from user settings
@@ -51,7 +63,7 @@ const PDFGenerator = (function() {
             jsPDF: {
                 unit: 'mm',
                 format: PAPER_SIZES[settings.paperSize] || 'a4',
-                orientation: 'portrait'
+                orientation: settings.orientation || 'portrait'
             },
             pagebreak: {
                 mode: ['css', 'avoid-all'],
@@ -78,6 +90,11 @@ const PDFGenerator = (function() {
 
         // Apply styles to elements for consistent PDF output
         applyPdfStyles(container);
+
+        // Apply syntax highlighting inline styles for PDF
+        if (settings.syntaxHighlight) {
+            applyHighlightStyles(container, 'github');
+        }
 
         return container;
     }
@@ -196,6 +213,151 @@ const PDFGenerator = (function() {
     }
 
     /**
+     * Apply syntax highlighting inline styles for PDF
+     * highlight.js applies styles via CSS classes, but html2canvas needs inline styles
+     * @param {HTMLElement} container
+     * @param {string} theme - The highlight.js theme name
+     */
+    function applyHighlightStyles(container, theme) {
+        // Theme-based color schemes (GitHub theme as default)
+        const themeStyles = {
+            'github': {
+                background: '#f6f8fa',
+                text: '#24292e',
+                keyword: '#d73a49',
+                string: '#032f62',
+                number: '#005cc5',
+                comment: '#6a737d',
+                function: '#6f42c1',
+                title: '#6f42c1',
+                built_in: '#005cc5',
+                type: '#d73a49',
+                variable: '#e36209',
+                tag: '#22863a',
+                attr: '#005cc5',
+                meta: '#005cc5',
+                addition: '#22863a',
+                deletion: '#b31d28'
+            },
+            'github-dark': {
+                background: '#0d1117',
+                text: '#c9d1d9',
+                keyword: '#ff7b72',
+                string: '#a5d6ff',
+                number: '#79c0ff',
+                comment: '#8b949e',
+                function: '#d2a8ff',
+                title: '#d2a8ff',
+                built_in: '#79c0ff',
+                type: '#ff7b72',
+                variable: '#ffa657',
+                tag: '#7ee787',
+                attr: '#79c0ff',
+                meta: '#79c0ff',
+                addition: '#7ee787',
+                deletion: '#ffa198'
+            },
+            'monokai': {
+                background: '#272822',
+                text: '#f8f8f2',
+                keyword: '#f92672',
+                string: '#e6db74',
+                number: '#ae81ff',
+                comment: '#75715e',
+                function: '#a6e22e',
+                title: '#a6e22e',
+                built_in: '#66d9ef',
+                type: '#66d9ef',
+                variable: '#f8f8f2',
+                tag: '#f92672',
+                attr: '#a6e22e',
+                meta: '#f92672',
+                addition: '#a6e22e',
+                deletion: '#f92672'
+            }
+        };
+
+        // Get theme colors or default to github
+        const colors = themeStyles[theme] || themeStyles['github'];
+
+        // Style highlighted code blocks
+        container.querySelectorAll('code.hljs').forEach(codeBlock => {
+            codeBlock.style.display = 'block';
+            codeBlock.style.padding = '16px';
+            codeBlock.style.backgroundColor = colors.background;
+            codeBlock.style.color = colors.text;
+            codeBlock.style.borderRadius = '4px';
+            codeBlock.style.overflowX = 'auto';
+            codeBlock.style.fontFamily = "'Menlo', 'Monaco', 'Courier New', monospace";
+            codeBlock.style.fontSize = '0.875em';
+            codeBlock.style.lineHeight = '1.45';
+
+            // Apply styles to highlighted spans
+            const styleMap = {
+                'hljs-keyword': { color: colors.keyword, fontWeight: '600' },
+                'hljs-string': { color: colors.string },
+                'hljs-number': { color: colors.number },
+                'hljs-literal': { color: colors.number },
+                'hljs-comment': { color: colors.comment, fontStyle: 'italic' },
+                'hljs-function': { color: colors.function },
+                'hljs-title': { color: colors.title },
+                'hljs-class': { color: colors.title },
+                'hljs-params': { color: colors.text },
+                'hljs-built_in': { color: colors.built_in },
+                'hljs-attr': { color: colors.attr },
+                'hljs-attribute': { color: colors.attr },
+                'hljs-selector-class': { color: colors.title },
+                'hljs-selector-id': { color: colors.number },
+                'hljs-selector-tag': { color: colors.tag },
+                'hljs-tag': { color: colors.tag },
+                'hljs-name': { color: colors.tag },
+                'hljs-type': { color: colors.type },
+                'hljs-variable': { color: colors.variable },
+                'hljs-template-variable': { color: colors.variable },
+                'hljs-regexp': { color: colors.string },
+                'hljs-link': { color: colors.string, textDecoration: 'underline' },
+                'hljs-meta': { color: colors.meta },
+                'hljs-meta-keyword': { color: colors.keyword },
+                'hljs-meta-string': { color: colors.string },
+                'hljs-symbol': { color: colors.number },
+                'hljs-bullet': { color: colors.number },
+                'hljs-addition': { color: colors.addition, backgroundColor: 'rgba(46, 160, 67, 0.15)' },
+                'hljs-deletion': { color: colors.deletion, backgroundColor: 'rgba(248, 81, 73, 0.15)' },
+                'hljs-emphasis': { fontStyle: 'italic' },
+                'hljs-strong': { fontWeight: '700' }
+            };
+
+            Object.keys(styleMap).forEach(className => {
+                codeBlock.querySelectorAll(`.${className}`).forEach(el => {
+                    const styles = styleMap[className];
+                    Object.keys(styles).forEach(prop => {
+                        el.style[prop] = styles[prop];
+                    });
+                });
+            });
+        });
+
+        // Ensure pre elements containing hljs code don't add extra padding
+        container.querySelectorAll('pre').forEach(pre => {
+            if (pre.querySelector('code.hljs')) {
+                pre.style.padding = '0';
+                pre.style.margin = '0 0 1em 0';
+                pre.style.backgroundColor = 'transparent';
+            }
+        });
+    }
+
+    /**
+     * Extract title from HTML content (first H1)
+     * @param {HTMLElement} container - HTML container
+     * @returns {string} Title text
+     */
+    function extractTitle(container) {
+        const h1 = container.querySelector('h1');
+        return h1 ? h1.textContent.trim() : '';
+    }
+
+    /**
      * Wait for Mermaid SVGs to be fully rendered
      * @param {HTMLElement} container - Container with Mermaid elements
      * @param {number} maxWait - Maximum wait time in ms
@@ -238,105 +400,6 @@ const PDFGenerator = (function() {
     }
 
     /**
-     * Convert SVG elements to inline images for better html2canvas compatibility
-     * html2canvas has issues with SVG foreignObject and complex SVG features
-     * @param {HTMLElement} container - Container with SVG elements
-     * @returns {Promise} Promise that resolves when all SVGs are converted
-     */
-    async function convertSvgsToImages(container) {
-        const svgElements = container.querySelectorAll('.mermaid svg');
-        const promises = [];
-
-        svgElements.forEach(svg => {
-            const promise = new Promise((resolve) => {
-                try {
-                    // Get SVG dimensions
-                    const bbox = svg.getBoundingClientRect();
-                    const width = bbox.width || parseInt(svg.getAttribute('width'), 10) || 800;
-                    const height = bbox.height || parseInt(svg.getAttribute('height'), 10) || 600;
-
-                    // Clone SVG and serialize
-                    const svgClone = svg.cloneNode(true);
-                    svgClone.setAttribute('width', width);
-                    svgClone.setAttribute('height', height);
-
-                    // Ensure xmlns is set
-                    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-                    svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-
-                    const svgData = new XMLSerializer().serializeToString(svgClone);
-                    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-                    const url = URL.createObjectURL(svgBlob);
-
-                    // Create image from SVG
-                    const img = new Image();
-                    img.onload = () => {
-                        // Create canvas and draw image
-                        const canvas = document.createElement('canvas');
-                        canvas.width = width * 2; // 2x for better quality
-                        canvas.height = height * 2;
-                        const ctx = canvas.getContext('2d');
-                        ctx.fillStyle = '#ffffff';
-                        ctx.fillRect(0, 0, canvas.width, canvas.height);
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                        // Replace SVG with canvas image
-                        const imgElement = document.createElement('img');
-                        imgElement.src = canvas.toDataURL('image/png');
-                        imgElement.style.maxWidth = '100%';
-                        imgElement.style.height = 'auto';
-                        imgElement.style.display = 'block';
-                        imgElement.style.margin = '0 auto';
-
-                        svg.parentNode.replaceChild(imgElement, svg);
-                        URL.revokeObjectURL(url);
-                        resolve();
-                    };
-                    img.onerror = () => {
-                        console.warn('Failed to convert SVG to image');
-                        URL.revokeObjectURL(url);
-                        resolve(); // Continue even if conversion fails
-                    };
-                    img.src = url;
-                } catch (error) {
-                    console.warn('SVG conversion error:', error);
-                    resolve(); // Continue even if conversion fails
-                }
-            });
-            promises.push(promise);
-        });
-
-        await Promise.all(promises);
-    }
-
-    /**
-     * Add page numbers to all pages of a jsPDF document
-     * @param {jsPDF} pdf - The jsPDF instance
-     */
-    function addPageNumbersToPdf(pdf) {
-        const totalPages = pdf.internal.getNumberOfPages();
-
-        for (let i = 1; i <= totalPages; i++) {
-            pdf.setPage(i);
-
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-
-            // Set font for page numbers
-            pdf.setFontSize(10);
-            pdf.setTextColor(128, 128, 128);
-
-            // Add centered page number at bottom
-            const text = `${i} / ${totalPages}`;
-            const textWidth = pdf.getStringUnitWidth(text) * pdf.getFontSize() / pdf.internal.scaleFactor;
-            const xPos = (pageWidth - textWidth) / 2;
-            const yPos = pageHeight - 10;
-
-            pdf.text(text, xPos, yPos);
-        }
-    }
-
-    /**
      * Wait for container to be fully rendered
      * @param {HTMLElement} container - The container to check
      * @param {number} maxWait - Maximum wait time in ms
@@ -362,23 +425,124 @@ const PDFGenerator = (function() {
     }
 
     /**
-     * Generate PDF from HTML content
+     * Build print CSS styles
+     * @param {Object} settings - User settings
+     * @returns {string} CSS string for print
+     */
+    function buildPrintStyles(settings) {
+        const dims = PAPER_DIMENSIONS[settings.paperSize] || PAPER_DIMENSIONS['a4'];
+        const width = settings.orientation === 'landscape' ? dims.height : dims.width;
+        const height = settings.orientation === 'landscape' ? dims.width : dims.height;
+
+        // Calculate margins - add space for header/footer if enabled
+        const headerMargin = settings.enableHeader ? Math.max(settings.margins.top, 15) : settings.margins.top;
+        const footerMargin = settings.enableFooter ? Math.max(settings.margins.bottom, 15) : settings.margins.bottom;
+
+        return `
+            @page {
+                size: ${width}mm ${height}mm;
+                margin: ${headerMargin}mm ${settings.margins.right}mm ${footerMargin}mm ${settings.margins.left}mm;
+            }
+            @media print {
+                body {
+                    margin: 0;
+                    padding: 0;
+                    font-size: ${settings.fontSize}px;
+                    line-height: 1.8;
+                    color: #333333;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                }
+                .page-break {
+                    page-break-before: always;
+                    break-before: page;
+                }
+                .print-header, .print-footer {
+                    position: fixed;
+                    left: 0;
+                    right: 0;
+                    text-align: center;
+                    font-size: 10px;
+                    color: #808080;
+                }
+                .print-header {
+                    top: 0;
+                }
+                .print-footer {
+                    bottom: 0;
+                }
+            }
+        `;
+    }
+
+    /**
+     * Build header/footer HTML for print
+     * Since CSS @page margin boxes have limited browser support,
+     * we use fixed position elements that appear on each printed page.
+     * Note: {pageNumber} and {totalPages} are not supported with this approach
+     * as JavaScript cannot determine print pagination.
+     * @param {Object} settings - User settings
+     * @param {string} title - Document title
+     * @returns {string} HTML string for header/footer
+     */
+    function buildHeaderFooterHtml(settings, title) {
+        const today = new Date().toLocaleDateString('ja-JP');
+        let html = '';
+
+        if (settings.enableHeader && settings.headerTemplate) {
+            const headerText = settings.headerTemplate
+                .replace(/\{date\}/g, today)
+                .replace(/\{title\}/g, title)
+                .replace(/\{pageNumber\}/g, '')
+                .replace(/\{totalPages\}/g, '');
+            if (headerText.trim()) {
+                html += `<div class="print-header">${escapeHtml(headerText)}</div>`;
+            }
+        }
+
+        if (settings.enableFooter && settings.footerTemplate) {
+            const footerText = settings.footerTemplate
+                .replace(/\{date\}/g, today)
+                .replace(/\{title\}/g, title)
+                .replace(/\{pageNumber\}/g, '')
+                .replace(/\{totalPages\}/g, '');
+            if (footerText.trim()) {
+                html += `<div class="print-footer">${escapeHtml(footerText)}</div>`;
+            }
+        }
+
+        return html;
+    }
+
+    /**
+     * Escape HTML special characters
+     * @param {string} text - Text to escape
+     * @returns {string} Escaped text
+     */
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Generate PDF using browser print dialog
      * @param {string} htmlContent - HTML content to convert
      * @param {Object} settings - User settings
-     * @returns {Promise} Promise that resolves when PDF is generated
+     * @returns {Promise} Promise that resolves when print dialog opens
      */
     async function generate(htmlContent, settings) {
-        const options = buildOptions(settings);
         const container = createStyledContainer(htmlContent, settings);
+        const title = extractTitle(container);
 
-        // Temporarily add container to DOM for rendering
-        // Use visibility: hidden instead of left: -9999px to keep element in rendering flow
+        // Temporarily add container to DOM for Mermaid rendering
         container.style.position = 'fixed';
         container.style.left = '0';
         container.style.top = '0';
         container.style.visibility = 'hidden';
         container.style.zIndex = '-1';
-        container.style.width = PAPER_WIDTHS[settings.paperSize] || '210mm';
+        container.style.width = getPaperWidth(settings.paperSize, settings.orientation);
         container.style.backgroundColor = '#ffffff';
         document.body.appendChild(container);
 
@@ -388,33 +552,99 @@ const PDFGenerator = (function() {
         // Render Mermaid diagrams if enabled
         if (settings.renderMermaid) {
             await MermaidRenderer.render(container, { showErrors: false });
-            // Wait for SVG rendering to complete (with timeout for reliability)
             await waitForMermaidSvgs(container, 5000);
-            // Convert SVGs to images for better html2canvas compatibility
-            await convertSvgsToImages(container);
         }
 
-        try {
-            if (settings.showPageNumbers) {
-                // Use toPdf() to get jsPDF instance, modify it, then save
-                await html2pdf()
-                    .set(options)
-                    .from(container)
-                    .toPdf()
-                    .get('pdf')
-                    .then(pdf => {
-                        addPageNumbersToPdf(pdf);
-                    })
-                    .save();
-            } else {
-                await html2pdf()
-                    .set(options)
-                    .from(container)
-                    .save();
+        // Get the final HTML content
+        const finalContent = container.innerHTML;
+
+        // Clean up temporary container
+        document.body.removeChild(container);
+
+        // Build print CSS and header/footer HTML
+        const printStyles = buildPrintStyles(settings);
+        const headerFooterHtml = buildHeaderFooterHtml(settings, title);
+
+        // Create hidden iframe for printing (same tab, no new window)
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = 'none';
+        document.body.appendChild(iframe);
+
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+
+        // Write content to iframe
+        iframeDoc.open();
+        iframeDoc.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>${title || 'Markdown Document'}</title>
+                <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+                <style>
+                    ${printStyles}
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        font-size: ${settings.fontSize}px;
+                        line-height: 1.8;
+                        color: #333333;
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    }
+                    h1 { font-size: 2em; margin-bottom: 0.5em; padding-bottom: 0.3em; border-bottom: 1px solid #e0e0e0; }
+                    h2 { font-size: 1.5em; margin-top: 1em; margin-bottom: 0.5em; }
+                    h3 { font-size: 1.25em; margin-top: 1em; margin-bottom: 0.5em; }
+                    p { margin-bottom: 1em; }
+                    ul, ol { margin-bottom: 1em; padding-left: 2em; }
+                    pre { background-color: #f5f5f5; padding: 16px; border-radius: 4px; overflow-x: auto; margin-bottom: 1em; }
+                    code { font-family: 'Menlo', 'Monaco', 'Courier New', monospace; font-size: 0.9em; }
+                    code:not(pre code) { background-color: #f5f5f5; padding: 2px 6px; border-radius: 3px; }
+                    blockquote { border-left: 4px solid #2563eb; padding-left: 16px; margin: 1em 0; color: #666666; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 1em; }
+                    th, td { border: 1px solid #e0e0e0; padding: 8px 12px; text-align: left; }
+                    th { background-color: #f5f5f5; font-weight: 600; }
+                    a { color: #2563eb; text-decoration: none; }
+                    .page-break { page-break-before: always; break-before: page; border: none; margin: 0; padding: 0; height: 0; }
+                    .mermaid-container { margin: 1em 0; text-align: center; }
+                    .mermaid-container svg { max-width: 100%; height: auto; }
+                </style>
+            </head>
+            <body>
+                ${headerFooterHtml}
+                ${finalContent}
+            </body>
+            </html>
+        `);
+        iframeDoc.close();
+
+        // Wait for iframe content to load
+        await new Promise((resolve) => {
+            iframe.onload = resolve;
+            setTimeout(resolve, 500);
+        });
+
+        // Print from iframe
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+
+        // Remove iframe after print dialog closes
+        const cleanup = () => {
+            if (iframe.parentNode) {
+                document.body.removeChild(iframe);
             }
-        } finally {
-            // Clean up
-            document.body.removeChild(container);
+        };
+
+        // Use afterprint event if supported
+        if ('onafterprint' in iframe.contentWindow) {
+            iframe.contentWindow.onafterprint = cleanup;
+        } else {
+            // Fallback: remove after a delay
+            setTimeout(cleanup, 1000);
         }
     }
 
