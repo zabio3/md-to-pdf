@@ -159,9 +159,26 @@ const UIController = (function() {
         // Remove existing auto page breaks and page number display
         container.querySelectorAll('.auto-page-break, .page-number-display').forEach(el => el.remove());
 
-        // Get total content height
-        const contentHeight = container.scrollHeight;
-        const totalPages = Math.max(1, Math.ceil(contentHeight / pageHeight));
+        // Get actual content height (not affected by CSS min-height)
+        // Calculate by finding the bottom position of the last content element
+        let actualContentHeight = 0;
+        const children = container.children;
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
+            // Skip page break indicators and page number display
+            if (child.classList.contains('auto-page-break') ||
+                child.classList.contains('page-number-display')) {
+                continue;
+            }
+            const rect = child.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const childBottom = rect.bottom - containerRect.top;
+            if (childBottom > actualContentHeight) {
+                actualContentHeight = childBottom;
+            }
+        }
+
+        const totalPages = Math.max(1, Math.ceil(actualContentHeight / pageHeight));
 
         // Add page break indicators if more than 1 page
         if (totalPages > 1) {
@@ -178,7 +195,7 @@ const UIController = (function() {
         if (settings.showPageNumbers) {
             const pageDisplay = document.createElement('div');
             pageDisplay.className = 'page-number-display';
-            pageDisplay.textContent = `${totalPages} ページ`;
+            pageDisplay.textContent = `${totalPages} page${totalPages > 1 ? 's' : ''}`;
             container.appendChild(pageDisplay);
         }
     }

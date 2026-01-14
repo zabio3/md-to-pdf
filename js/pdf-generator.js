@@ -150,6 +150,8 @@ const PDFGenerator = (function() {
             el.style.width = '100%';
             el.style.borderCollapse = 'collapse';
             el.style.marginBottom = '1em';
+            el.style.breakInside = 'avoid';
+            el.style.pageBreakInside = 'avoid';
         });
 
         container.querySelectorAll('th, td').forEach(el => {
@@ -183,12 +185,128 @@ const PDFGenerator = (function() {
         container.querySelectorAll('.mermaid-container').forEach(el => {
             el.style.margin = '1em 0';
             el.style.textAlign = 'center';
+            el.style.breakInside = 'avoid';
+            el.style.pageBreakInside = 'avoid';
         });
 
         container.querySelectorAll('.mermaid svg').forEach(el => {
             el.style.maxWidth = '100%';
             el.style.height = 'auto';
         });
+    }
+
+    /**
+     * Wait for Mermaid SVGs to be fully rendered
+     * @param {HTMLElement} container - Container with Mermaid elements
+     * @param {number} maxWait - Maximum wait time in ms
+     * @returns {Promise} Promise that resolves when SVGs are ready
+     */
+    async function waitForMermaidSvgs(container, maxWait = 5000) {
+        const mermaidContainers = container.querySelectorAll('.mermaid-container');
+        if (mermaidContainers.length === 0) {
+            return;
+        }
+
+        const startTime = Date.now();
+
+        // Wait until all mermaid containers have SVG children with dimensions
+        while (Date.now() - startTime < maxWait) {
+            await new Promise(resolve => requestAnimationFrame(resolve));
+
+            let allReady = true;
+            for (const mc of mermaidContainers) {
+                const svg = mc.querySelector('svg');
+                if (!svg) {
+                    allReady = false;
+                    break;
+                }
+                // Check if SVG has valid dimensions
+                const bbox = svg.getBoundingClientRect();
+                if (bbox.width === 0 || bbox.height === 0) {
+                    allReady = false;
+                    break;
+                }
+            }
+
+            if (allReady) {
+                // Additional frame to ensure rendering is complete
+                await new Promise(resolve => requestAnimationFrame(resolve));
+                return;
+            }
+        }
+        console.warn('waitForMermaidSvgs: timeout reached, some SVGs may not be fully rendered');
+    }
+
+    /**
+     * Convert SVG elements to inline images for better html2canvas compatibility
+     * html2canvas has issues with SVG foreignObject and complex SVG features
+     * @param {HTMLElement} container - Container with SVG elements
+     * @returns {Promise} Promise that resolves when all SVGs are converted
+     */
+    async function convertSvgsToImages(container) {
+        const svgElements = container.querySelectorAll('.mermaid svg');
+        const promises = [];
+
+        svgElements.forEach(svg => {
+            const promise = new Promise((resolve) => {
+                try {
+                    // Get SVG dimensions
+                    const bbox = svg.getBoundingClientRect();
+                    const width = bbox.width || parseInt(svg.getAttribute('width'), 10) || 800;
+                    const height = bbox.height || parseInt(svg.getAttribute('height'), 10) || 600;
+
+                    // Clone SVG and serialize
+                    const svgClone = svg.cloneNode(true);
+                    svgClone.setAttribute('width', width);
+                    svgClone.setAttribute('height', height);
+
+                    // Ensure xmlns is set
+                    svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                    svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+                    const svgData = new XMLSerializer().serializeToString(svgClone);
+                    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(svgBlob);
+
+                    // Create image from SVG
+                    const img = new Image();
+                    img.onload = () => {
+                        // Create canvas and draw image
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width * 2; // 2x for better quality
+                        canvas.height = height * 2;
+                        const ctx = canvas.getContext('2d');
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                        // Replace SVG with canvas image
+                        const imgElement = document.createElement('img');
+                        imgElement.src = canvas.toDataURL('image/png');
+                        imgElement.style.maxWidth = '100%';
+                        imgElement.style.height = 'auto';
+                        imgElement.style.display = 'block';
+                        imgElement.style.margin = '0 auto';
+
+                        svg.parentNode.replaceChild(imgElement, svg);
+                        URL.revokeObjectURL(url);
+                        resolve();
+                    };
+                    img.onerror = () => {
+                        console.warn('Failed to convert SVG to image');
+                        URL.revokeObjectURL(url);
+                        resolve(); // Continue even if conversion fails
+                    };
+                    img.src = url;
+                } catch (error) {
+                    console.warn('SVG conversion error:', error);
+                    resolve(); // Continue even if conversion fails
+                }
+            });
+            promises.push(promise);
+        });
+
+        await Promise.all(promises);
     }
 
     /**
@@ -254,10 +372,14 @@ const PDFGenerator = (function() {
         const container = createStyledContainer(htmlContent, settings);
 
         // Temporarily add container to DOM for rendering
-        container.style.position = 'absolute';
-        container.style.left = '-9999px';
+        // Use visibility: hidden instead of left: -9999px to keep element in rendering flow
+        container.style.position = 'fixed';
+        container.style.left = '0';
         container.style.top = '0';
+        container.style.visibility = 'hidden';
+        container.style.zIndex = '-1';
         container.style.width = PAPER_WIDTHS[settings.paperSize] || '210mm';
+        container.style.backgroundColor = '#ffffff';
         document.body.appendChild(container);
 
         // Wait for container to be fully rendered
@@ -266,8 +388,10 @@ const PDFGenerator = (function() {
         // Render Mermaid diagrams if enabled
         if (settings.renderMermaid) {
             await MermaidRenderer.render(container, { showErrors: false });
-            // Wait for SVG rendering to complete
-            await new Promise(resolve => setTimeout(resolve, 100));
+            // Wait for SVG rendering to complete (with timeout for reliability)
+            await waitForMermaidSvgs(container, 5000);
+            // Convert SVGs to images for better html2canvas compatibility
+            await convertSvgsToImages(container);
         }
 
         try {
