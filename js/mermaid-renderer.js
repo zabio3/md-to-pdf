@@ -79,7 +79,7 @@ const MermaidRenderer = (function() {
                 const errorMessage = extractErrorMessage(error);
                 errorDiv.innerHTML = `
                     <span class="mermaid-error-icon">⚠</span>
-                    <span class="mermaid-error-text">ダイアグラムの描画に失敗しました</span>
+                    <span class="mermaid-error-text">Failed to render diagram</span>
                     <span class="mermaid-error-detail">${escapeHtml(errorMessage)}</span>
                 `;
 
