@@ -13,6 +13,9 @@ const UIController = (function() {
     let debounceTimer = null;
     const DEBOUNCE_DELAY = 300;
 
+    // Current view mode ('editor', 'split', 'preview')
+    let currentViewMode = 'split';
+
     /**
      * Initialize UI Controller
      */
@@ -54,7 +57,14 @@ const UIController = (function() {
             headerInputGroup: document.getElementById('header-input-group'),
             enableFooter: document.getElementById('enable-footer'),
             footerTemplate: document.getElementById('footer-template'),
-            footerInputGroup: document.getElementById('footer-input-group')
+            footerInputGroup: document.getElementById('footer-input-group'),
+            viewEditBtn: document.getElementById('view-edit'),
+            viewSplitBtn: document.getElementById('view-split'),
+            viewPreviewBtn: document.getElementById('view-preview'),
+            mainContent: document.querySelector('.main-content'),
+            resizeHandles: document.querySelectorAll('.resize-handle'),
+            editorPanel: document.querySelector('.editor-panel'),
+            previewPanel: document.querySelector('.preview-panel')
         };
     }
 
@@ -90,6 +100,20 @@ const UIController = (function() {
         if (elements.advancedToggle) {
             elements.advancedToggle.addEventListener('click', toggleAdvancedSettings);
         }
+
+        // View mode toggle buttons
+        if (elements.viewEditBtn) {
+            elements.viewEditBtn.addEventListener('click', () => setViewMode('editor'));
+        }
+        if (elements.viewSplitBtn) {
+            elements.viewSplitBtn.addEventListener('click', () => setViewMode('split'));
+        }
+        if (elements.viewPreviewBtn) {
+            elements.viewPreviewBtn.addEventListener('click', () => setViewMode('preview'));
+        }
+
+        // Resize handles
+        initResizeHandles();
 
         // Mermaid rendering checkbox
         if (elements.renderMermaid) {
@@ -380,12 +404,133 @@ const UIController = (function() {
         elements.advancedToggle.classList.toggle('expanded', isHidden);
     }
 
+    /**
+     * Initialize resize handles for panel resizing
+     */
+    function initResizeHandles() {
+        let isResizing = false;
+        let currentHandle = null;
+        let startX = 0;
+        let startWidths = {};
+
+        elements.resizeHandles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                currentHandle = handle;
+                startX = e.clientX;
+                handle.classList.add('dragging');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+
+                // Store current widths
+                const mainRect = elements.mainContent.getBoundingClientRect();
+                startWidths = {
+                    sidebar: elements.sidebar.getBoundingClientRect().width,
+                    editor: elements.editorPanel.getBoundingClientRect().width,
+                    preview: elements.previewPanel.getBoundingClientRect().width,
+                    total: mainRect.width
+                };
+
+                e.preventDefault();
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing || !currentHandle) return;
+
+            // Skip resize operations if not in split view mode
+            if (currentViewMode !== 'split') return;
+
+            const deltaX = e.clientX - startX;
+            const resizeType = currentHandle.dataset.resize;
+            const minWidth = 150;
+            const handleWidth = 4;
+
+            if (resizeType === 'sidebar') {
+                // Resizing sidebar
+                let newSidebarWidth = startWidths.sidebar + deltaX;
+
+                // Max width: leave at least minWidth for both editor and preview
+                const maxSidebarWidth = startWidths.total - minWidth * 2 - handleWidth * 2;
+                newSidebarWidth = Math.max(minWidth, Math.min(newSidebarWidth, maxSidebarWidth));
+
+                // Keep editor and preview proportions the same
+                const remainingWidth = startWidths.total - newSidebarWidth - handleWidth * 2;
+                const totalEditorPreview = startWidths.editor + startWidths.preview;
+                const editorRatio = totalEditorPreview > 0 ? startWidths.editor / totalEditorPreview : 0.5;
+                const newEditorWidth = Math.max(minWidth, remainingWidth * editorRatio);
+                const newPreviewWidth = Math.max(minWidth, remainingWidth - newEditorWidth);
+
+                elements.mainContent.style.gridTemplateColumns =
+                    `${newSidebarWidth}px ${handleWidth}px ${newEditorWidth}px ${handleWidth}px ${newPreviewWidth}px`;
+            } else if (resizeType === 'editor') {
+                // Resizing editor/preview split
+                const totalWidth = startWidths.editor + startWidths.preview;
+                let newEditorWidth = startWidths.editor + deltaX;
+
+                // Clamp editor width to valid range, ensuring both panels meet minimum
+                newEditorWidth = Math.max(minWidth, Math.min(newEditorWidth, totalWidth - minWidth));
+                const newPreviewWidth = totalWidth - newEditorWidth;
+
+                elements.mainContent.style.gridTemplateColumns =
+                    `${startWidths.sidebar}px ${handleWidth}px ${newEditorWidth}px ${handleWidth}px ${newPreviewWidth}px`;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing && currentHandle) {
+                currentHandle.classList.remove('dragging');
+                isResizing = false;
+                currentHandle = null;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            }
+        });
+    }
+
+    /**
+     * Set view mode (editor, split, preview)
+     */
+    function setViewMode(mode) {
+        // Track current view mode
+        currentViewMode = mode;
+
+        // Remove all view mode classes
+        elements.mainContent.classList.remove('view-editor-only', 'view-preview-only');
+
+        // Reset inline grid styles when changing mode
+        elements.mainContent.style.gridTemplateColumns = '';
+
+        // Remove active class from all toggle buttons
+        elements.viewEditBtn.classList.remove('active');
+        elements.viewSplitBtn.classList.remove('active');
+        elements.viewPreviewBtn.classList.remove('active');
+
+        // Apply selected mode
+        switch (mode) {
+            case 'editor':
+                elements.mainContent.classList.add('view-editor-only');
+                elements.viewEditBtn.classList.add('active');
+                break;
+            case 'preview':
+                elements.mainContent.classList.add('view-preview-only');
+                elements.viewPreviewBtn.classList.add('active');
+                break;
+            case 'split':
+            default:
+                currentViewMode = 'split';
+                elements.viewSplitBtn.classList.add('active');
+                break;
+        }
+    }
+
     // Public API
     return {
         initialize,
         updatePreview,
         getSettings,
         showLoading,
-        toggleSidebar
+        toggleSidebar,
+        setViewMode
     };
 })();
