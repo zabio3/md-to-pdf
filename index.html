@@ -23,6 +23,26 @@
                 </button>
                 <h1 class="header-title">MD to PDF</h1>
             </div>
+            <div class="view-toggle-group">
+                <button id="view-edit" class="view-toggle-btn" aria-label="Editor only" title="Editor only">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M11.5 2.5l2 2-8 8H3.5v-2l8-8z"/>
+                        <path d="M10 4l2 2"/>
+                    </svg>
+                </button>
+                <button id="view-split" class="view-toggle-btn active" aria-label="Split view" title="Split view">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="1.5" y="2.5" width="13" height="11" rx="1"/>
+                        <line x1="8" y1="2.5" x2="8" y2="13.5"/>
+                    </svg>
+                </button>
+                <button id="view-preview" class="view-toggle-btn" aria-label="Preview only" title="Preview only">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <ellipse cx="8" cy="8" rx="6.5" ry="4"/>
+                        <circle cx="8" cy="8" r="2"/>
+                    </svg>
+                </button>
+            </div>
             <button id="export-btn" class="export-btn">
                 <span class="export-btn-text">Export PDF</span>
                 <span class="export-btn-loading" hidden>Generating...</span>
@@ -147,6 +167,9 @@
                 </div>
             </aside>
 
+            <!-- Resize Handle: Sidebar <-> Editor -->
+            <div class="resize-handle" data-resize="sidebar"></div>
+
             <!-- Editor Panel -->
             <section class="editor-panel">
                 <h2 class="panel-title">Markdown</h2>
@@ -168,6 +191,9 @@ Use &lt;!-- pagebreak --&gt; for page breaks.
 
 Content on the second page."></textarea>
             </section>
+
+            <!-- Resize Handle: Editor <-> Preview -->
+            <div class="resize-handle" data-resize="editor"></div>
 
             <!-- Preview Panel -->
             <section class="preview-panel">

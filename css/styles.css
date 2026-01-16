@@ -131,12 +131,35 @@ body {
     cursor: not-allowed;
 }
 
-/* Main Content - 3 Column Layout */
+/* Main Content - 5 Column Layout (with resize handles) */
 .main-content {
     display: grid;
-    grid-template-columns: 220px 1fr 1fr;
+    grid-template-columns: 220px 4px 1fr 4px 1fr;
     flex: 1;
     overflow: hidden;
+}
+
+/* Resize Handles */
+.resize-handle {
+    background-color: var(--border-color);
+    cursor: col-resize;
+    transition: background-color 0.2s;
+    position: relative;
+    z-index: 5;
+}
+
+.resize-handle:hover,
+.resize-handle.dragging {
+    background-color: var(--accent-color);
+}
+
+.resize-handle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    right: -4px;
 }
 
 /* Sidebar */
@@ -392,6 +415,65 @@ body {
     flex-direction: column;
     background-color: var(--bg-primary);
     overflow: hidden;
+}
+
+/* View toggle button group */
+.view-toggle-group {
+    display: flex;
+    background-color: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 2px;
+    gap: 2px;
+}
+
+.view-toggle-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 28px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.view-toggle-btn:hover {
+    color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+    background-color: var(--bg-secondary);
+    color: var(--accent-color);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.view-toggle-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* View modes - sidebar always visible */
+/* Editor only mode */
+.main-content.view-editor-only {
+    grid-template-columns: 220px 4px 1fr 0 0;
+}
+
+.main-content.view-editor-only .preview-panel,
+.main-content.view-editor-only .resize-handle[data-resize="editor"] {
+    display: none;
+}
+
+/* Preview only mode */
+.main-content.view-preview-only {
+    grid-template-columns: 220px 4px 0 0 1fr;
+}
+
+.main-content.view-preview-only .editor-panel,
+.main-content.view-preview-only .resize-handle[data-resize="editor"] {
+    display: none;
 }
 
 .preview-container {
