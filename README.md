@@ -80,7 +80,7 @@ Supported diagram types:
 - Entity Relationship diagrams
 - And more ([Mermaid documentation](https://mermaid.js.org/intro/))
 
-Mermaid rendering can be toggled on/off in **Settings > 詳細設定 > Mermaidダイアグラムを描画**.
+Mermaid rendering can be toggled on/off in **Settings > Advanced Settings > Render Mermaid diagrams**.
 
 ### Custom Header/Footer
 
@@ -93,7 +93,7 @@ Add custom headers and footers to your PDF with dynamic values:
 
 Example footer template: `{title} - {date}`
 
-Configure in **Settings > 詳細設定 > ヘッダー / フッター**.
+Configure in **Settings > Advanced Settings > Header / Footer**.
 
 ### Print Options
 
