@@ -17,27 +17,81 @@ async function recordDemo() {
   await page.fill('#markdown-input', '');
   await page.waitForTimeout(500);
 
-  // Paste markdown content (instant fill like copy-paste)
-  const markdown = `# Welcome to MD to PDF
+  // Paste markdown content with complex Mermaid diagram
+  const markdown = `# Project Documentation
 
-## Features
+## Overview
 
-- Real-time preview
-- PDF export
-- Mermaid diagrams
+This document demonstrates the **MD to PDF Converter** features including:
 
-## Flowchart Example
+- Real-time Markdown preview
+- Syntax highlighting for code blocks
+- Mermaid diagram rendering
+- Customizable PDF export options
+
+## Architecture
 
 \`\`\`mermaid
-flowchart TD
-    A[Start] --> B{Decision}
-    B -->|Yes| C[Process]
-    B -->|No| D[End]
+flowchart TB
+    subgraph Client["Browser Client"]
+        UI[User Interface]
+        Editor[Markdown Editor]
+        Preview[Live Preview]
+    end
+
+    subgraph Core["Core Engine"]
+        Parser[Markdown Parser]
+        Renderer[HTML Renderer]
+        Mermaid[Mermaid.js]
+        Highlight[Syntax Highlighter]
+    end
+
+    subgraph Export["Export Module"]
+        PDF[PDF Generator]
+        Print[Print API]
+    end
+
+    UI --> Editor
+    Editor --> Parser
+    Parser --> Renderer
+    Renderer --> Preview
+    Renderer --> Mermaid
+    Renderer --> Highlight
+    Preview --> PDF
+    PDF --> Print
 \`\`\`
+
+## Code Example
+
+\`\`\`javascript
+// Initialize the application
+const app = {
+  init() {
+    this.editor = document.getElementById('markdown-input');
+    this.preview = document.getElementById('preview-content');
+    this.bindEvents();
+  },
+
+  bindEvents() {
+    this.editor.addEventListener('input', () => {
+      this.render();
+    });
+  }
+};
+\`\`\`
+
+## Features Table
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Live Preview | ✅ | Real-time rendering |
+| PDF Export | ✅ | One-click export |
+| Mermaid | ✅ | Diagram support |
+| Code Highlight | ✅ | Multiple languages |
 `;
 
   await page.fill('#markdown-input', markdown);
-  await page.waitForTimeout(2000);
+  await page.waitForTimeout(2500);
 
   // Sidebar is always visible at 1280px width
   // Change paper size to Letter
