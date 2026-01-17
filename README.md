@@ -4,6 +4,12 @@ A lightweight, client-side Markdown to PDF converter. No server required - runs 
 
 **[Try it online](https://zabio3.github.io/md-to-pdf/)**
 
+## Demo
+
+![Basic Usage](assets/images/demo-basic.gif)
+
+*Write Markdown → See live preview → Export to PDF*
+
 ## Features
 
 - Real-time Markdown preview
