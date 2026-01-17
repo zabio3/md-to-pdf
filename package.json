@@ -1,0 +1,13 @@
+{
+  "name": "md-to-pdf",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "demo": "npx serve -l 3000 & sleep 2 && node scripts/record-demo.js && pkill -f 'serve -l 3000'",
+    "demo:gif": "npm run demo && ffmpeg -y -i videos/*.webm -filter_complex 'fps=10,scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse' assets/images/demo-basic.gif"
+  },
+  "devDependencies": {
+    "playwright": "^1.50.0",
+    "serve": "^14.2.0"
+  }
+}
