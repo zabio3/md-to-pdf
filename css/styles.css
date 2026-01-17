@@ -476,6 +476,10 @@ body {
     display: none;
 }
 
+.main-content.view-preview-only .preview-panel {
+    grid-column: 5;
+}
+
 .preview-container {
     flex: 1;
     min-height: 0;
